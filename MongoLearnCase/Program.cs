@@ -36,12 +36,26 @@
             };
 
 
-            await collection.InsertOneAsync(document);
-
-
             var doc = collection.Find(new BsonDocument()).FirstOrDefault();
+
+            doc.InvokeIfNull(async () => await collection.InsertOneAsync(document));
+
+            var filter = collection.Find(new BsonDocument());
+            Console.WriteLine(filter);
+            doc = await filter.FirstOrDefaultAsync();
+
             // ReSharper disable once SpecifyACultureInStringConversionExplicitly
             Console.WriteLine(doc.ToString());
+            Console.WriteLine();
+        }
+    }
+
+    public static class Ex
+    {
+        public static void InvokeIfNull<TInput>(this TInput input, Action func)
+        {
+            if (input != null) return;
+            func();
         }
     }
 }
